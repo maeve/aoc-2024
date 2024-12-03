@@ -3,13 +3,22 @@
 
 input = File.readlines('./input.txt').map(&:chomp)
 
-pairs = []
+instructions = []
 input.each do |line|
-  pairs += line.scan(/^(?:(?:(?!don't\(\)|!do\(\)).)*?(?:mul\(([0-9]{1,3}),([0-9]{1,3})\))+)+/)
-  puts "Pairs: #{pairs}"
-  pairs += line.scan(/(?:do\(\))(?:(?:(?!don't\(\)).)*?(?:mul\(([0-9]{1,3}),([0-9]{1,3})\))+)+/)
-  puts "Pairs: #{pairs}"
+  instructions += line.scan(/(don't\(\)|mul\([0-9]{1,3},[0-9]{1,3}\)|do\(\))/).flatten
 end
-answer = pairs.map { |n1, n2| n1.to_i * n2.to_i }.sum
+
+enabled = true
+answer = 0
+instructions.each do |instruction|
+  if instruction == "don't()"
+    enabled = false
+  elsif instruction == 'do()'
+    enabled = true
+  elsif enabled
+    n1, n2 = instruction.scan(/mul\(([0-9]{1,3}),([0-9]{1,3})\)/).flatten
+    answer += n1.to_i * n2.to_i
+  end
+end
 
 puts "Answer: #{answer}"
