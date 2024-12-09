@@ -13,12 +13,12 @@ matches = 0
 
 # Brute force search
 grid.each_index do |row_index|
-  x_indexes = grid[row_index].each_index.select { |i| grid[row_index][i] == 'X' }
+  grid[row_index].each_index do |col_index|
+    next unless grid[row_index][col_index] == 'X'
 
-  x_indexes.each do |col_index|
-    if row_index >= 3
+    if row_index - 3 >= 0
       # Upper diagonal to the left
-      if col_index >= 3 &&
+      if col_index - 3 >= 0 &&
          grid[row_index - 1][col_index - 1] == 'M' &&
          grid[row_index - 2][col_index - 2] == 'A' &&
          grid[row_index - 3][col_index - 3] == 'S'
@@ -33,7 +33,7 @@ grid.each_index do |row_index|
       end
 
       # Upper diagonal to the right
-      if col_index < grid[row_index].size - 4 &&
+      if col_index + 3 < grid[row_index].size &&
          grid[row_index - 1][col_index + 1] == 'M' &&
          grid[row_index - 2][col_index + 2] == 'A' &&
          grid[row_index - 3][col_index + 3] == 'S'
@@ -41,9 +41,9 @@ grid.each_index do |row_index|
       end
     end
 
-    if row_index < grid.size - 4
+    if row_index + 3 < grid.size
       # Down diagonal to the left
-      if col_index >= 3 &&
+      if col_index - 3 >= 0 &&
          grid[row_index + 1][col_index - 1] == 'M' &&
          grid[row_index + 2][col_index - 2] == 'A' &&
          grid[row_index + 3][col_index - 3] == 'S'
@@ -58,7 +58,7 @@ grid.each_index do |row_index|
       end
 
       # Down diagonal to the right
-      if col_index < grid[row_index].size - 4 &&
+      if col_index + 3 < grid[row_index].size &&
          grid[row_index + 1][col_index + 1] == 'M' &&
          grid[row_index + 2][col_index + 2] == 'A' &&
          grid[row_index + 3][col_index + 3] == 'S'
@@ -67,7 +67,7 @@ grid.each_index do |row_index|
     end
 
     # Search to the left
-    if col_index >= 3 &&
+    if col_index - 3 >= 0 &&
        grid[row_index][col_index - 1] == 'M' &&
        grid[row_index][col_index - 2] == 'A' &&
        grid[row_index][col_index - 3] == 'S'
@@ -75,7 +75,7 @@ grid.each_index do |row_index|
     end
 
     # Search to the right
-    if col_index < grid[row_index].size - 4 &&
+    if col_index + 3 < grid[row_index].size &&
        grid[row_index][col_index + 1] == 'M' &&
        grid[row_index][col_index + 2] == 'A' &&
        grid[row_index][col_index + 3] == 'S'
@@ -85,4 +85,3 @@ grid.each_index do |row_index|
 end
 
 puts "Matches: #{matches}"
-# 2473 is too low
