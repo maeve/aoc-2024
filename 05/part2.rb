@@ -3,20 +3,20 @@
 
 input = File.readlines('./input.txt').map(&:chomp)
 
-ordering_rules = []
+rules = []
 updates = []
 
 input.each do |line|
   if line.include?('|')
-    ordering_rules << line.split('|')
+    rules << line.split('|')
   elsif line.include?(',')
     updates << line.split(',')
   end
 end
 
-unordered_updates = updates.reject do |update|
+def ordered?(update, rules)
   update.all? do |page|
-    ordering_rules.all? do |rule|
+    rules.all? do |rule|
       !rule.include?(page) ||
         (other_page = rule.find { |p| p != page }) &&
           (!update.include?(other_page) ||
@@ -25,20 +25,38 @@ unordered_updates = updates.reject do |update|
   end
 end
 
-sorted_updates = unordered_updates.each do |update|
-  update.sort! do |a, b|
-    rule = ordering_rules.find { |r| r.include?(a) && r.include?(b) }
-    if rule.first == a
-      update.index(a) <=> update.index(b)
-    elsif rule.first == b
-      update.index(b) <=> update.index(a)
-    else
-      0
+updates.reject! { |u| ordered?(u, rules) }
+
+sorted_updates = updates.map do |update|
+  ordered_update = []
+
+  update.each do |page|
+    matching_rules = rules.select do |rule|
+      rule.include?(page) &&
+        ordered_update.include?(rule.find { |p| p != page })
+    end
+
+    if matching_rules.empty?
+      ordered_update << page
+      next
+    end
+
+    matching_rules.each do |rule|
+      other_page = rule.find { |p| p != page }
+      if rule.index(page) < rule.index(other_page)
+        ordered_update.unshift(page)
+      else
+        ordered_update.push(page)
+      end
     end
   end
+
+  ordered_update
 end
 
-middles = sorted_updates.map { |update| update[update.size / 2].to_i }
+middles = sorted_updates.map { |u| u[u.size / 2].to_i }
 
 puts "Answer: #{middles.sum}"
 # 4897 is too low
+# 5377 is too high
+# 4948 is too low
