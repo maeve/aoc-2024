@@ -14,7 +14,7 @@ input.each do |line|
   end
 end
 
-def ordered?(update, rules)
+unordered_updates = updates.reject do |update|
   update.all? do |page|
     rules.all? do |rule|
       !rule.include?(page) ||
@@ -25,29 +25,24 @@ def ordered?(update, rules)
   end
 end
 
-updates.reject! { |u| ordered?(u, rules) }
-
-sorted_updates = updates.map do |update|
+sorted_updates = unordered_updates.map do |update|
   ordered_update = []
 
   update.each do |page|
-    matching_rules = rules.select do |rule|
-      rule.include?(page) &&
-        ordered_update.include?(rule.find { |p| p != page })
-    end
+    min_index = rules.map do |rule|
+      ordered_update.rindex(rule.first) if rule.last == page
+    end.compact.sort.max
 
-    if matching_rules.empty?
+    max_index = rules.map do |rule|
+      ordered_update.index(rule.last) if rule.first == page
+    end.compact.sort.min
+
+    if max_index.nil?
       ordered_update << page
-      next
-    end
-
-    matching_rules.each do |rule|
-      other_page = rule.find { |p| p != page }
-      if rule.index(page) < rule.index(other_page)
-        ordered_update.unshift(page)
-      else
-        ordered_update.push(page)
-      end
+    elsif min_index.nil?
+      ordered_update.unshift(page)
+    else
+      ordered_update.insert(min_index.to_i + 1, page)
     end
   end
 
@@ -57,6 +52,3 @@ end
 middles = sorted_updates.map { |u| u[u.size / 2].to_i }
 
 puts "Answer: #{middles.sum}"
-# 4897 is too low
-# 5377 is too high
-# 4948 is too low
