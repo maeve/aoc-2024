@@ -4,18 +4,28 @@
 input = File.readlines('./input.txt').map(&:chomp)
 
 class Grid
-  attr_reader :grid, :current, :direction
+  attr_reader :initial_grid, :initial_position, :initial_direction,
+              :current_grid, :current_position, :current_direction
 
   def initialize(input)
-    @grid = input.map { |line| line.split('') }
+    @initial_grid = input.map { |line| line.split('') }
+
     input.each_index do |row|
       col = input[row].index('^')
       next unless col
 
-      visit(row, col)
-      @direction = :up
+      @initial_position = [row, col]
+      @initial_direction = :up
       break
     end
+
+    reset_current
+  end
+
+  def reset_current
+    @current_direction = initial_direction.dup
+    @current_grid = initial_grid.map(&:dup)
+    visit(*initial_position)
   end
 
   def create_map
@@ -31,54 +41,49 @@ class Grid
   end
 
   def obstacle?(row, col)
-    @grid[row][col] == '#'
+    current_grid[row][col] == '#'
   end
 
   def off_grid?(row, col)
-    row.negative? || row >= grid.size ||
-      col.negative? || col >= grid[0].size
+    row.negative? || row >= current_grid.size ||
+      col.negative? || col >= current_grid[0].size
   end
 
   def next_position
-    case @direction
-    when :up
-      row = current[0] - 1
-      col = current[1]
-    when :down
-      row = current[0] + 1
-      col = current[1]
-    when :left
-      row = current[0]
-      col = current[1] - 1
-    when :right
-      row = current[0]
-      col = current[1] + 1
+    row, col = current_position
+
+    case current_direction
+    when :up then row -= 1
+    when :down then row += 1
+    when :left then col -= 1
+    when :right then col += 1
     end
 
     [row, col]
   end
 
   def visit(row, col)
-    @current = [row, col]
-    @grid[row][col] = 'X'
+    current_grid[row][col] = 'X'
+    @current_position = [row, col]
   end
 
+  TURNS = {
+    up: :right,
+    right: :down,
+    down: :left,
+    left: :up
+  }.freeze
+
   def turn
-    @direction = 
-      case @direction
-      when :up then :right
-      when :right then :down
-      when :down then :left
-      when :left then :up
-      end
+    @current_direction = TURNS[current_direction]
   end
 
   def print
-    @grid.each { |line| puts line.join('') }
+    current_grid.each { |line| puts line.join('') }
   end
 
   def visit_count
-    @grid.flatten.count('X')
+    current_grid.flatten.count('X')
   end
 end
 
