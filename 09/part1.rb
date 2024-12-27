@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-input = File.readlines('./test-input.txt').map(&:chomp)
+input = File.readlines('./input.txt').map(&:chomp)
 
 class DiskMap
   attr_reader :original_map, :expanded_map
@@ -25,11 +25,13 @@ class DiskMap
   end
 
   def compact
-    until expanded_map.none?(&:nil?)
-      block = expanded_map.pop
-      next unless block
+    compacted = expanded_map.compact
+    expanded_map.slice!(compacted.size..)
 
-      expanded_map[expanded_map.index(nil)] = block
+    expanded_map.each_index do |i|
+      next unless expanded_map[i].nil?
+
+      expanded_map[i] = compacted.pop
     end
   end
 
